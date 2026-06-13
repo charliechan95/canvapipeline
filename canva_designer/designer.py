@@ -114,7 +114,6 @@ class CanvaDesigner:
                     if (parent) {{
                         const rect = parent.getBoundingClientRect();
                         if (rect.width > 0 && rect.height > 0) {{
-                            parent.click();
                             return {{ x: Math.round(rect.x + rect.width/2), y: Math.round(rect.y + rect.height/2) }};
                         }}
                     }}
@@ -124,6 +123,9 @@ class CanvaDesigner:
         }}
         """)
         if result:
+            # Use real mouse click (JS click doesn't trigger Canva's selection)
+            await self.page.mouse.click(result['x'], result['y'])
+            await asyncio.sleep(Config.SHORT_WAIT)
             logger.info(f"Selected text '{text}' at ({result['x']}, {result['y']})")
             return True
         logger.warning(f"Text '{text}' not found")
@@ -147,8 +149,11 @@ class CanvaDesigner:
 
     async def set_font(self, font_name: str) -> bool:
         """Set font family by opening dropdown and searching."""
+        # Wait for toolbar to appear
+        font_btn = self.page.locator('[aria-label*="Toggle font selector"]')
+        await font_btn.wait_for(state="visible", timeout=10000)
         # Click font button
-        await self.page.locator('[aria-label*="Toggle font selector"]').click()
+        await font_btn.click()
         await asyncio.sleep(1.5)
 
         # Search
@@ -296,6 +301,9 @@ class CanvaDesigner:
         """
         if not await self.select_text(text):
             return False
+
+        # Wait for toolbar to appear after text selection
+        await self.page.locator('[aria-label*="Toggle font selector"]').wait_for(state="visible", timeout=10000)
 
         if font:
             await self.set_font(font)
