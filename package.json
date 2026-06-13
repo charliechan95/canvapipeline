@@ -1,0 +1,10 @@
+{
+  "name": "canva-designer",
+  "version": "0.1.0",
+  "description": "Browser automation tool for Canva design editing",
+  "main": "canva_designer/designer.py",
+  "scripts": {
+    "test": "pytest tests/ -v",
+    "test:integration": "pytest tests/ -v -m integration"
+  }
+}
